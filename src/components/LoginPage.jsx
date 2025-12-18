@@ -212,15 +212,11 @@ function LoginPage() {
 
             <div className="login-social">
               <button 
-                className="btn btn-secondary social-btn social-btn-disabled" 
-                disabled
-                title="Coming soon!"
+                className="btn btn-secondary social-btn"
+                onClick={() => handleOAuth('github')}
               >
                 <img src="https://authjs.dev/img/providers/github.svg" alt="GitHub" />
-                <span className="btn-text">
-                  GitHub
-                  <span className="coming-soon-badge">Soon</span>
-                </span>
+                GitHub
               </button>
               <button 
                 className="btn btn-secondary social-btn"
