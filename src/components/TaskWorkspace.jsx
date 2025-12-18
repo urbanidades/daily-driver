@@ -146,6 +146,7 @@ function TaskWorkspace() {
 
         <div className="workspace-editor-container">
           <TaskEditor 
+            key={task.id}
             content={task.content || task.description || ''} 
             onChange={handleContentChange}
             placeholder="Write your task details here... Use / for commands"

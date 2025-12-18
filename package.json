@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.88.0",
+    "@tiptap/extension-bubble-menu": "^3.13.0",
     "@tiptap/extension-image": "^3.13.0",
     "@tiptap/extension-placeholder": "^3.13.0",
     "@tiptap/extension-table": "^3.13.0",
