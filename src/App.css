@@ -16,18 +16,6 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--spacing-lg);
-  transition: margin-right var(--transition-normal);
-}
-
-/* When panel is open on desktop */
-.main-content.panel-open {
-  margin-right: 0;
-}
-
-@media (min-width: 1024px) {
-  .main-content.panel-open {
-    margin-right: 480px;
-  }
 }
 
 /* Page transitions */
@@ -73,7 +61,7 @@
 
 .card-interactive:hover {
   transform: translateY(-2px);
-  border-color: rgba(249, 245, 6, 0.3);
+  border-color: rgba(124, 58, 237, 0.3);
 }
 
 /* Button styles */
@@ -146,7 +134,7 @@
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(249, 245, 6, 0.2);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
 }
 
 .input::placeholder {

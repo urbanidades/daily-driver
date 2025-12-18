@@ -41,7 +41,64 @@
 .add-task-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(249, 245, 6, 0.2);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.add-task-priority-options {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.priority-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.priority-btn .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.priority-btn:hover {
+  border-color: var(--primary);
+  color: var(--text-main);
+}
+
+.priority-btn.active {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.priority-btn.urgent.active {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.priority-btn.high.active {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.priority-btn.low.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: #10b981;
 }
 
 .add-task-input::placeholder {

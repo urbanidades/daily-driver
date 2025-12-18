@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import './Header.css';
 
 function Header() {
   const { state, toggleTheme, getCurrentProject } = useApp();
+  const { signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -88,6 +90,14 @@ function Header() {
             <span className="material-symbols-outlined">
               {state.theme === 'light' ? 'dark_mode' : 'light_mode'}
             </span>
+          </button>
+          <button 
+            className="header-logout-btn"
+            onClick={signOut}
+            title="Sign Out"
+            aria-label="Sign Out"
+          >
+            <span className="material-symbols-outlined">logout</span>
           </button>
         </div>
       </div>

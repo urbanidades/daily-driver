@@ -83,15 +83,17 @@ function appReducer(state, action) {
       return { ...state, selectedDate: action.payload, selectedTask: null };
       
     case ACTIONS.ADD_TASK: {
-      const { projectId, date, title, estimatedDays } = action.payload;
+      const { projectId, date, title, estimatedDays, priority } = action.payload;
       const dateKey = formatDateKey(date);
       const newTask = {
         id: uuidv4(),
         projectId,
         date: dateKey,
         title,
-        description: '',
+        description: '', // Legacy
+        content: '', // Rich text (TipTap HTML)
         status: 'not_started',
+        priority: priority || 'normal', // urgent, high, normal, low
         estimatedDays: estimatedDays || 1,
         createdAt: new Date().toISOString()
       };
@@ -259,8 +261,8 @@ export function AppProvider({ children }) {
     
     setSelectedDate: (date) => dispatch({ type: ACTIONS.SET_SELECTED_DATE, payload: date }),
     
-    addTask: (projectId, date, title, estimatedDays) => 
-      dispatch({ type: ACTIONS.ADD_TASK, payload: { projectId, date, title, estimatedDays } }),
+    addTask: (projectId, date, title, estimatedDays, priority) => 
+      dispatch({ type: ACTIONS.ADD_TASK, payload: { projectId, date, title, estimatedDays, priority } }),
     updateTask: (projectId, taskId, updates) => 
       dispatch({ type: ACTIONS.UPDATE_TASK, payload: { projectId, taskId, updates } }),
     deleteTask: (projectId, taskId, dateKey) => 
@@ -287,13 +289,27 @@ export function AppProvider({ children }) {
     return state.projects.find(p => p.id === state.selectedProject);
   };
   
+  // Helper to find task by ID across all projects/dates
+  const getTaskById = (taskId) => {
+    for (const projectId of Object.keys(state.tasks)) {
+      const projectTasks = state.tasks[projectId];
+      for (const dateKey of Object.keys(projectTasks)) {
+        const dateTasks = projectTasks[dateKey];
+        const task = dateTasks.find(t => t.id === taskId);
+        if (task) return task;
+      }
+    }
+    return null;
+  };
+  
   return (
     <AppContext.Provider value={{ 
       state, 
       ...actions,
       getTasksForDate,
       getProjectTasks,
-      getCurrentProject
+      getCurrentProject,
+      getTaskById
     }}>
       {children}
     </AppContext.Provider>

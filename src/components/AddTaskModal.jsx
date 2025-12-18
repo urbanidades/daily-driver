@@ -6,11 +6,12 @@ function AddTaskModal({ projectId, date, onClose }) {
   const { addTask } = useApp();
   const [title, setTitle] = useState('');
   const [estimatedDays, setEstimatedDays] = useState(1);
+  const [priority, setPriority] = useState('normal');
   
   const handleSubmit = (e) => {
     e.preventDefault();
     if (title.trim()) {
-      addTask(projectId, date, title.trim(), estimatedDays);
+      addTask(projectId, date, title.trim(), estimatedDays, priority);
       onClose();
     }
   };
@@ -33,6 +34,23 @@ function AddTaskModal({ projectId, date, onClose }) {
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
             />
+          </div>
+          
+          <div className="add-task-field">
+            <label className="add-task-label">Priority</label>
+            <div className="add-task-priority-options">
+              {['urgent', 'high', 'normal', 'low'].map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className={`priority-btn ${p} ${priority === p ? 'active' : ''}`}
+                  onClick={() => setPriority(p)}
+                >
+                  <span className="material-symbols-outlined">flag</span>
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
           
           <div className="add-task-field">

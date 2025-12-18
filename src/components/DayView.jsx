@@ -49,7 +49,7 @@ function DayView() {
   };
   
   const handleTaskClick = (task) => {
-    selectTask(task);
+    navigate(`/task/${task.id}`);
   };
   
   const getDayLabel = () => {
@@ -119,6 +119,12 @@ function DayView() {
                 <div className="task-item-info">
                   <h3 className="task-item-title">{task.title}</h3>
                   <div className="task-item-meta">
+                    {task.priority && task.priority !== 'normal' && (
+                      <span className={`task-item-priority-badge ${task.priority}`}>
+                        <span className="material-symbols-outlined">flag</span>
+                        {task.priority}
+                      </span>
+                    )}
                     {task.estimatedDays > 0 && (
                       <span className="task-item-badge">
                         {task.estimatedDays} day{task.estimatedDays !== 1 ? 's' : ''}
