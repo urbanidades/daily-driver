@@ -119,8 +119,8 @@ function LoginPage() {
     <div className="login-container">
       <div className="login-card">
         <div className="login-brand">
-          <img src="/logo-light.png" alt="Daily Driver" className="login-logo" />
-          <p className="login-subtitle">Your productivity, powered by AI.</p>
+          <img src="/logo-dark.png" alt="Daily Driver" className="login-logo" />
+          <p className="login-subtitle">Your productivity app, powered by AI.</p>
         </div>
 
         {otpSent ? (
@@ -211,13 +211,27 @@ function LoginPage() {
             </div>
 
             <div className="login-social">
-              <button className="btn btn-secondary social-btn" onClick={() => handleOAuth('github')}>
+              <button 
+                className="btn btn-secondary social-btn social-btn-disabled" 
+                disabled
+                title="Coming soon!"
+              >
                 <img src="https://authjs.dev/img/providers/github.svg" alt="GitHub" />
-                GitHub
+                <span className="btn-text">
+                  GitHub
+                  <span className="coming-soon-badge">Soon</span>
+                </span>
               </button>
-              <button className="btn btn-secondary social-btn" onClick={() => handleOAuth('google')}>
+              <button 
+                className="btn btn-secondary social-btn social-btn-disabled" 
+                disabled
+                title="Coming soon!"
+              >
                 <img src="https://authjs.dev/img/providers/google.svg" alt="Google" />
-                Google
+                <span className="btn-text">
+                  Google
+                  <span className="coming-soon-badge">Soon</span>
+                </span>
               </button>
             </div>
 
