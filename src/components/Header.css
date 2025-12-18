@@ -1,40 +1,42 @@
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   background: var(--background);
   border-bottom: 1px solid var(--border);
-  padding: var(--spacing-xs) var(--spacing-lg);
+  border-radius: 0 0 12px 12px;
+  height: 52px;
   transition: background-color var(--transition-normal);
 }
 
 .header-content {
-  max-width: 1280px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-md);
+  height: 100%;
+  padding: 0 24px;
+  width: 100%;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  position: absolute;
+  left: 24px;
 }
 
 .header-branding {
   display: flex;
   align-items: center;
-  height: 200px; /* Reverted to previous size */
-  min-width: 500px;
-  padding: 8px 0;
+  height: 36px;
 }
 
 .header-logo-full {
-  height: 100%;
+  height: 36px;
   width: auto;
-  max-width: 500px;
   object-fit: contain;
 }
 
@@ -68,6 +70,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  position: absolute;
+  right: 24px;
 }
 
 .header-theme-toggle {

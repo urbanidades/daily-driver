@@ -265,10 +265,10 @@ export function AppProvider({ children }) {
       payload: state.theme === 'light' ? 'dark' : 'light' 
     }),
     
-    addProject: async (name) => {
+    addProject: async (name, type = 'personal') => {
       if (user) {
         try {
-          const project = await db.createProject(name);
+          const project = await db.createProject(name, type);
           dispatch({ type: ACTIONS.ADD_PROJECT, payload: project });
         } catch (error) {
           console.error('Failed to add project:', error);
@@ -277,6 +277,8 @@ export function AppProvider({ children }) {
         const newProject = {
           id: uuidv4(),
           name,
+          type,
+          visible: true,
           createdAt: new Date().toISOString()
         };
         dispatch({ type: ACTIONS.ADD_PROJECT, payload: newProject });

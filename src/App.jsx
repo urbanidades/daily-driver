@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { useAuth } from './context/AuthContext';
 import Header from './components/Header';
-import ProjectList from './components/ProjectList';
+import Dashboard from './components/Dashboard';
 import CalendarView from './components/CalendarView';
 import DayView from './components/DayView';
 import LoginPage from './components/LoginPage';
@@ -24,7 +24,7 @@ function AppContent() {
       <div className="app-content">
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<ProjectList />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/project/:projectId" element={<CalendarView />} />
             <Route path="/project/:projectId/day/:dateKey" element={<DayView />} />
             <Route path="/task/:taskId" element={<TaskWorkspace />} />

@@ -24,13 +24,13 @@ export async function fetchProjects() {
 /**
  * Create a new project
  */
-export async function createProject(name) {
+export async function createProject(name, type = 'personal', visible = true) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
 
   const { data, error } = await supabase
     .from('projects')
-    .insert({ name, user_id: user.id })
+    .insert({ name, user_id: user.id, type, visible })
     .select()
     .single();
 
