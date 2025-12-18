@@ -1,0 +1,121 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  padding: var(--spacing-xs) var(--spacing-lg);
+  transition: background-color var(--transition-normal);
+}
+
+.header-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.header-branding {
+  display: flex;
+  align-items: center;
+  height: 200px; /* Reverted to previous size */
+  min-width: 500px;
+  padding: 8px 0;
+}
+
+.header-logo-full {
+  height: 100%;
+  width: auto;
+  max-width: 500px;
+  object-fit: contain;
+}
+
+.header-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.header-breadcrumbs a {
+  transition: color var(--transition-fast);
+}
+
+.header-breadcrumbs a:hover {
+  color: var(--text-main);
+}
+
+.header-breadcrumbs-separator {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.header-breadcrumbs-current {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.header-theme-toggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+}
+
+.header-theme-toggle:hover {
+  background: var(--background);
+  color: var(--text-main);
+}
+
+.header-back-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+}
+
+.header-back-btn:hover {
+  background: var(--background);
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .header-logo-text {
+    display: none;
+  }
+  
+  .header-breadcrumbs {
+    display: none;
+  }
+}

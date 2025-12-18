@@ -1,0 +1,72 @@
+.add-task-modal {
+  padding: var(--spacing-xl);
+}
+
+.add-task-modal h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: var(--spacing-lg);
+}
+
+.add-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.add-task-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.add-task-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.add-task-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  color: var(--text-main);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.add-task-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(249, 245, 6, 0.2);
+}
+
+.add-task-input::placeholder {
+  color: var(--text-muted);
+}
+
+.add-task-days-input {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.add-task-days-input input {
+  width: 80px;
+  text-align: center;
+}
+
+.add-task-days-input span {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.add-task-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-sm);
+}
