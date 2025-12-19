@@ -342,3 +342,85 @@
   background: rgba(255, 255, 255, 0.12);
   margin: 0 8px;
 }
+
+/* Inline AI Prompt Box */
+.ai-prompt-inline-wrapper {
+  margin: 1rem 0;
+}
+
+.ai-prompt-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-prompt-inline-input-container {
+  display: flex;
+  align-items: center;
+  background: #1a1a2e;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-prompt-inline-input-container:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.ai-prompt-inline-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 14px 16px;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.ai-prompt-inline-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.ai-prompt-inline-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 4px;
+  background: linear-gradient(135deg, var(--primary), #9333ea);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-prompt-inline-send:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+}
+
+.ai-prompt-inline-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-prompt-inline-send .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ai-prompt-inline-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin: 0;
+  padding-left: 16px;
+}

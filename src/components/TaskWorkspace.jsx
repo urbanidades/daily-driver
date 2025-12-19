@@ -4,8 +4,8 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import TaskEditor from './TaskEditor';
 import { formatDateLong } from '../utils/dateUtils';
-import { ChevronLeft, Trash2, Calendar, Target, Flag, Circle, Sparkles, Wand2, Check, X, Layers } from 'lucide-react';
-import { improveDescription, IMPROVEMENT_OPTIONS } from '../utils/aiService';
+import { ChevronLeft, Trash2, Calendar, Target, Flag, Circle, Sparkles, Wand2, Check, X, Layers, Send } from 'lucide-react';
+import { improveDescription, promptAI, IMPROVEMENT_OPTIONS } from '../utils/aiService';
 import { supabase } from '../utils/supabaseClient';
 import './TaskWorkspace.css';
 
@@ -91,6 +91,8 @@ function TaskWorkspace() {
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiPreview, setAiPreview] = useState(null); // { originalHtml, originalText, enhanced, mode }
   const [editorKey, setEditorKey] = useState(0); // Force editor refresh
+  const [showPromptModal, setShowPromptModal] = useState(false);
+  const [promptText, setPromptText] = useState('');
   
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
@@ -124,6 +126,38 @@ function TaskWorkspace() {
     
     fetchUsage();
   }, [user, isAdmin]);
+
+  // Set up global callback for inline AI prompt
+  useEffect(() => {
+    window.__aiPromptCallback = async (prompt) => {
+      if (!isAdmin && aiUsesRemaining <= 0) {
+        throw new Error('You have reached your AI usage limit.');
+      }
+
+      const currentTask = getTaskById(taskId);
+      const contentPlain = (currentTask?.content || '').replace(/<[^>]*>/g, '').trim();
+
+      const response = await promptAI(prompt, currentTask?.title || '', contentPlain);
+      
+      // Show preview modal instead of direct insert
+      setAiPreview({
+        originalHtml: currentTask?.content || '',
+        originalText: contentPlain,
+        enhanced: response,
+        mode: 'prompt',
+        isPromptMode: true,
+        userPrompt: prompt // Store the user's prompt for Keep Both
+      });
+      
+      // Return empty string - the AiPromptNode will delete itself
+      // The actual content will be inserted when user accepts the preview
+      return '';
+    };
+
+    return () => {
+      delete window.__aiPromptCallback;
+    };
+  }, [taskId, isAdmin, aiUsesRemaining, getTaskById]);
 
   // Sync task from global state
   useEffect(() => {
@@ -238,7 +272,13 @@ function TaskWorkspace() {
     if (!aiPreview) return;
     
     // Convert enhanced text to proper HTML
-    const newContent = textToHtml(aiPreview.enhanced);
+    const enhancedHtml = textToHtml(aiPreview.enhanced);
+    
+    // For prompt mode: append to existing content
+    // For enhance mode: replace content
+    const newContent = aiPreview.isPromptMode 
+      ? (aiPreview.originalHtml + enhancedHtml)
+      : enhancedHtml;
     
     // Update local state immediately for instant UI refresh
     setTask(prev => ({ ...prev, content: newContent }));
@@ -256,8 +296,17 @@ function TaskWorkspace() {
     if (!aiPreview) return;
     
     // Create combined content with headers and divider
-    const enhancedHtml = textToHtml(aiPreview.enhanced);
-    const combinedContent = `<h1>Enhanced</h1>${enhancedHtml}<hr><h1>Original</h1>${aiPreview.originalHtml}`;
+    const responseHtml = textToHtml(aiPreview.enhanced);
+    
+    let combinedContent;
+    if (aiPreview.isPromptMode) {
+      // For prompt mode: Show original content + divider + prompt + response
+      const promptHtml = `<p><strong>Prompt:</strong> ${aiPreview.userPrompt}</p>`;
+      combinedContent = `${aiPreview.originalHtml}<hr><h2>AI Generated</h2>${promptHtml}${responseHtml}`;
+    } else {
+      // For enhance mode: Enhanced first, then original
+      combinedContent = `<h1>Enhanced</h1>${responseHtml}<hr><h1>Original</h1>${aiPreview.originalHtml}`;
+    }
     
     // Update local state immediately for instant UI refresh
     setTask(prev => ({ ...prev, content: combinedContent }));
@@ -275,6 +324,63 @@ function TaskWorkspace() {
     setAiPreview(null);
   };
 
+  // Handler for /prompt slash command
+  const openPromptModal = () => {
+    setShowPromptModal(true);
+    setPromptText('');
+    setAiError(null);
+  };
+
+  // Handler for /enhance slash command - opens AI panel
+  const openEnhancePanel = () => {
+    setShowAiPanel(true);
+  };
+
+  // Submit AI prompt
+  const handlePromptSubmit = async () => {
+    if (!promptText.trim()) return;
+    
+    if (!isAdmin && aiUsesRemaining <= 0) {
+      setAiError('You have reached your AI usage limit.');
+      return;
+    }
+
+    const currentTask = getTaskById(taskId);
+    if (!currentTask) {
+      setAiError('Task not found.');
+      return;
+    }
+
+    const contentPlain = (currentTask.content || '').replace(/<[^>]*>/g, '').trim();
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const response = await promptAI(promptText, currentTask.title, contentPlain);
+      const responseHtml = textToHtml(response);
+      
+      // Append AI response to existing content
+      const newContent = (currentTask.content || '') + responseHtml;
+      
+      // Update local state immediately for instant UI refresh
+      setTask(prev => ({ ...prev, content: newContent }));
+      setEditorKey(prev => prev + 1);
+      
+      // Then persist to database
+      updateTask(currentTask.projectId, currentTask.id, { content: newContent });
+      
+      await incrementUsage();
+      
+      setShowPromptModal(false);
+      setPromptText('');
+    } catch (err) {
+      setAiError(err.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="task-workspace">
       {/* AI Preview Modal */}
@@ -283,13 +389,13 @@ function TaskWorkspace() {
           <div className="ai-preview-modal">
             <div className="ai-preview-header">
               <Sparkles size={20} />
-              <h3>AI Enhancement Preview</h3>
-              <span className="ai-preview-mode">{aiPreview.mode}</span>
+              <h3>{aiPreview.isPromptMode ? 'AI Response' : 'AI Enhancement Preview'}</h3>
+              {!aiPreview.isPromptMode && <span className="ai-preview-mode">{aiPreview.mode}</span>}
             </div>
             
             <div className="ai-preview-content">
               <div className="ai-preview-section">
-                <label>Enhanced Version:</label>
+                <label>{aiPreview.isPromptMode ? 'Generated Content:' : 'Enhanced Version:'}</label>
                 <div className="ai-preview-text enhanced">
                   {aiPreview.enhanced}
                 </div>
@@ -308,6 +414,64 @@ function TaskWorkspace() {
               <button className="ai-accept-btn" onClick={handleAcceptEnhancement}>
                 <Check size={16} />
                 Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Prompt Modal */}
+      {showPromptModal && (
+        <div className="ai-preview-overlay">
+          <div className="ai-preview-modal ai-prompt-modal">
+            <div className="ai-preview-header">
+              <Sparkles size={20} />
+              <h3>AI Prompt</h3>
+            </div>
+            
+            <div className="ai-prompt-content">
+              <textarea
+                className="ai-prompt-input"
+                placeholder="Ask AI anything about this task... (e.g., 'Create a checklist for this', 'Summarize this task', 'Add acceptance criteria')"
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    handlePromptSubmit();
+                  }
+                }}
+                autoFocus
+                rows={4}
+              />
+              {aiError && <p className="ai-error">{aiError}</p>}
+              <p className="ai-hint">Press Cmd/Ctrl + Enter to submit</p>
+            </div>
+            
+            <div className="ai-preview-actions">
+              <button 
+                className="ai-decline-btn" 
+                onClick={() => setShowPromptModal(false)}
+                disabled={aiLoading}
+              >
+                <X size={16} />
+                Cancel
+              </button>
+              <button 
+                className="ai-accept-btn" 
+                onClick={handlePromptSubmit}
+                disabled={aiLoading || !promptText.trim()}
+              >
+                {aiLoading ? (
+                  <>
+                    <span className="material-symbols-outlined spinning">progress_activity</span>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    Generate
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -448,6 +612,8 @@ function TaskWorkspace() {
             content={task.content || task.description || ''} 
             onChange={handleContentChange}
             placeholder="Write your task details here... Use / for commands"
+            onAiPrompt={openPromptModal}
+            onAiEnhance={openEnhancePanel}
           />
         </div>
       </main>

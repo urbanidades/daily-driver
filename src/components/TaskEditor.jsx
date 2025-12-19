@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
@@ -8,10 +8,11 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
+import { AiPromptNode } from './extensions/AiPromptNode';
 import './TaskEditor.css';
 
-// Slash command options
-const SLASH_COMMANDS = [
+// Base slash command options (static)
+const BASE_SLASH_COMMANDS = [
   { name: 'Heading 1', icon: 'format_h1', command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() },
   { name: 'Heading 2', icon: 'format_h2', command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() },
   { name: 'Bullet List', icon: 'format_list_bulleted', command: (editor) => editor.chain().focus().toggleBulletList().run() },
@@ -25,7 +26,13 @@ const SLASH_COMMANDS = [
 // Debounce delay in ms
 const SAVE_DEBOUNCE_MS = 500;
 
-function TaskEditor({ content, onChange, placeholder = 'Write your task details here... Type / for commands' }) {
+function TaskEditor({ 
+  content, 
+  onChange, 
+  placeholder = 'Write your task details here... Type / for commands',
+  onAiPrompt,
+  onAiEnhance
+}) {
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [slashMenuPosition, setSlashMenuPosition] = useState({ top: 0, left: 0 });
   const [slashFilter, setSlashFilter] = useState('');
@@ -40,6 +47,42 @@ function TaskEditor({ content, onChange, placeholder = 'Write your task details 
   const selectedIndexRef = useRef(selectedIndex);
   const slashFilterRef = useRef(slashFilter);
   const onChangeRef = useRef(onChange);
+  
+  // Build dynamic SLASH_COMMANDS with AI options
+  const SLASH_COMMANDS = useMemo(() => {
+    const commands = [...BASE_SLASH_COMMANDS];
+    
+    // Add AI Prompt command - inserts inline input box
+    commands.push({
+      name: 'AI Prompt',
+      icon: 'smart_toy',
+      description: 'Ask AI anything',
+      command: (editor) => {
+        editor.chain().focus().insertContent({
+          type: 'aiPrompt',
+          attrs: { onSubmit: '__aiPromptCallback' }
+        }).run();
+      }
+    });
+    
+    // Add AI Enhance command if callback provided
+    if (onAiEnhance) {
+      commands.push({
+        name: 'AI Enhance',
+        icon: 'auto_fix_high',
+        description: 'Improve your text',
+        command: () => onAiEnhance()
+      });
+    }
+    
+    return commands;
+  }, [onAiEnhance]);
+  
+  // Ref for SLASH_COMMANDS to use in callbacks
+  const slashCommandsRef = useRef(SLASH_COMMANDS);
+  useEffect(() => {
+    slashCommandsRef.current = SLASH_COMMANDS;
+  }, [SLASH_COMMANDS]);
   
   // Keep refs in sync
   useEffect(() => {
@@ -60,7 +103,7 @@ function TaskEditor({ content, onChange, placeholder = 'Write your task details 
 
   // Get filtered commands
   const getFilteredCommands = useCallback(() => {
-    return SLASH_COMMANDS.filter(cmd =>
+    return slashCommandsRef.current.filter(cmd =>
       cmd.name.toLowerCase().includes(slashFilterRef.current.toLowerCase())
     );
   }, []);
@@ -85,6 +128,7 @@ function TaskEditor({ content, onChange, placeholder = 'Write your task details 
       TableRow,
       TableHeader,
       TableCell,
+      AiPromptNode,
     ],
     // Initial content - only used on mount (uncontrolled)
     content: content || '',
