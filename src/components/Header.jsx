@@ -91,14 +91,14 @@ function Header() {
               {state.theme === 'light' ? 'dark_mode' : 'light_mode'}
             </span>
           </button>
-          <button 
-            className="header-logout-btn"
-            onClick={signOut}
-            title="Sign Out"
-            aria-label="Sign Out"
+          <Link 
+            to="/settings"
+            className="header-logout-btn" // Reuse same class for now or rename to header-icon-btn
+            title="Settings"
+            aria-label="Settings"
           >
-            <span className="material-symbols-outlined">logout</span>
-          </button>
+            <span className="material-symbols-outlined">settings</span>
+          </Link>
         </div>
       </div>
     </header>

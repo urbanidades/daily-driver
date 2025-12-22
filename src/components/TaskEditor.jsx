@@ -10,22 +10,83 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import Highlight from '@tiptap/extension-highlight';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { common, createLowlight } from 'lowlight';
 import { AiPromptNode } from './extensions/AiPromptNode';
 import { CalloutNode } from './extensions/CalloutNode';
 import './TaskEditor.css';
 
+const lowlight = createLowlight(common);
+
 // Base slash command options (static)
 const BASE_SLASH_COMMANDS = [
-  { name: 'Heading 1', icon: 'format_h1', command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() },
-  { name: 'Heading 2', icon: 'format_h2', command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() },
-  { name: 'To-do', icon: 'check_box', command: (editor) => editor.chain().focus().toggleTaskList().run() },
-  { name: 'Callout', icon: 'lightbulb', command: (editor) => editor.chain().focus().setCallout().run() },
-  { name: 'Bullet List', icon: 'format_list_bulleted', command: (editor) => editor.chain().focus().toggleBulletList().run() },
-  { name: 'Numbered List', icon: 'format_list_numbered', command: (editor) => editor.chain().focus().toggleOrderedList().run() },
-  { name: 'Code Block', icon: 'code', command: (editor) => editor.chain().focus().toggleCodeBlock().run() },
-  { name: 'Quote', icon: 'format_quote', command: (editor) => editor.chain().focus().toggleBlockquote().run() },
-  { name: 'Divider', icon: 'horizontal_rule', command: (editor) => editor.chain().focus().setHorizontalRule().run() },
-  { name: 'Table', icon: 'table_chart', command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
+  { 
+    name: 'Heading 1', 
+    icon: 'format_h1', 
+    description: 'Big section heading',
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run() 
+  },
+  { 
+    name: 'Heading 2', 
+    icon: 'format_h2', 
+    description: 'Medium section heading',
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run() 
+  },
+  { 
+    name: 'To-do', 
+    icon: 'check_box', 
+    description: 'Track tasks with checkboxes',
+    command: (editor) => editor.chain().focus().toggleTaskList().run() 
+  },
+  { 
+    name: 'Bullet List', 
+    icon: 'format_list_bulleted', 
+    description: 'Create a simple bulleted list',
+    command: (editor) => editor.chain().focus().toggleBulletList().run() 
+  },
+  { 
+    name: 'Numbered List', 
+    icon: 'format_list_numbered', 
+    description: 'Create a list with numbering',
+    command: (editor) => editor.chain().focus().toggleOrderedList().run() 
+  },
+  { 
+    name: 'Highlight', 
+    icon: 'border_color', 
+    description: 'Mark text for emphasis',
+    command: (editor) => editor.chain().focus().toggleHighlight().run() 
+  },
+  { 
+    name: 'Code Block', 
+    icon: 'code', 
+    description: 'Code snippet with syntax highlighting',
+    command: (editor) => editor.chain().focus().toggleCodeBlock().run() 
+  },
+  { 
+    name: 'Quote', 
+    icon: 'format_quote', 
+    description: 'Capture a quote',
+    command: (editor) => editor.chain().focus().toggleBlockquote().run() 
+  },
+  { 
+    name: 'Callout', 
+    icon: 'lightbulb', 
+    description: 'Make writing stand out',
+    command: (editor) => editor.chain().focus().setCallout().run() 
+  },
+  { 
+    name: 'Divider', 
+    icon: 'horizontal_rule', 
+    description: 'Visually separate sections',
+    command: (editor) => editor.chain().focus().setHorizontalRule().run() 
+  },
+  { 
+    name: 'Table', 
+    icon: 'table_chart', 
+    description: 'Add a table for structured data',
+    command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() 
+  },
 ];
 
 // Debounce delay in ms
@@ -134,9 +195,15 @@ function TaskEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false,
+      }),
       Placeholder.configure({
         placeholder,
+      }),
+      Highlight.configure({ multicolor: true }),
+      CodeBlockLowlight.configure({
+        lowlight,
       }),
       Image,
       Table.configure({
@@ -294,6 +361,31 @@ function TaskEditor({
       }
     };
   }, []);
+
+  // Sync content when prop changes (from real-time updates)
+  useEffect(() => {
+    // Check if content is truly different to avoid loops
+    if (editor && content !== undefined && content !== editor.getHTML()) {
+      // We accept updates even if focused, to ensure other devices see changes.
+      // We try to preserve the cursor position.
+      
+      const { from, to } = editor.state.selection;
+      
+      // Store current scroll position
+      const { scrollTop } = editor.view.dom;
+      
+      editor.commands.setContent(content);
+      
+      // Restore cursor and scroll if focused
+      if (isFocused) {
+        editor.commands.setTextSelection({ from, to });
+        // Attempt to restore scroll (might need requestAnimationFrame)
+        requestAnimationFrame(() => {
+           if (editor.view.dom) editor.view.dom.scrollTop = scrollTop;
+        });
+      }
+    }
+  }, [editor, content, isFocused]);
 
   // Scroll selected item into view
   useEffect(() => {
@@ -879,6 +971,13 @@ function TaskEditor({
         >
           <span className="material-symbols-outlined">format_strikethrough</span>
         </button>
+        <button
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+          className={editor.isActive('highlight') ? 'is-active' : ''}
+          title="Highlight"
+        >
+          <span className="material-symbols-outlined">border_color</span>
+        </button>
         <div className="bubble-divider" />
         <button
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -1012,8 +1111,13 @@ function TaskEditor({
               }}
               onMouseEnter={() => setSelectedIndex(index)}
             >
-              <span className="material-symbols-outlined">{cmd.icon}</span>
-              <span>{cmd.name}</span>
+              <div className="slash-command-icon">
+                <span className="material-symbols-outlined">{cmd.icon}</span>
+              </div>
+              <div className="slash-command-text">
+                <div className="slash-command-name">{cmd.name}</div>
+                {cmd.description && <div className="slash-command-desc">{cmd.description}</div>}
+              </div>
             </button>
           ))}
         </div>

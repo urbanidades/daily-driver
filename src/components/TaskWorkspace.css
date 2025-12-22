@@ -187,6 +187,7 @@
   outline: none;
   resize: none;
   line-height: 1.2;
+  padding-left: 48px; /* Align with editor content gutter */
 }
 
 .workspace-title-input::placeholder {

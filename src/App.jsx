@@ -8,6 +8,7 @@ import CalendarView from './components/CalendarView';
 import DayView from './components/DayView';
 import LoginPage from './components/LoginPage';
 import TaskWorkspace from './components/TaskWorkspace';
+import Settings from './components/Settings';
 import './index.css';
 import './App.css';
 
@@ -28,6 +29,7 @@ function AppContent() {
             <Route path="/project/:projectId" element={<CalendarView />} />
             <Route path="/project/:projectId/day/:dateKey" element={<DayView />} />
             <Route path="/task/:taskId" element={<TaskWorkspace />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

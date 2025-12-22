@@ -531,6 +531,11 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-bullet-list/-/extension-bullet-list-3.13.0.tgz#277c9380704f618d71b63278da7bba45ed2b7905"
   integrity sha512-fFQmmEUoPzRGiQJ/KKutG35ZX21GE+1UCDo8Q6PoWH7Al9lex47nvyeU1BiDYOhcTKgIaJRtEH5lInsOsRJcSA==
 
+"@tiptap/extension-code-block-lowlight@^3.14.0":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-code-block-lowlight/-/extension-code-block-lowlight-3.14.0.tgz#3c80595ee95654ac2b7f9e9555968eb4de49ea89"
+  integrity sha512-vkiDvPZUadrjAGNzvJYYXl5R+U1XmGALSbm+VlrGCR7iXHgYaMHdkqxHwGZMSqtsF2szPEqcAzLZShlAKl+AkA==
+
 "@tiptap/extension-code-block@^3.13.0":
   version "3.13.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-code-block/-/extension-code-block-3.13.0.tgz#ded41a224db15e938c6a871462a0c33c00acd657"
@@ -570,6 +575,11 @@
   version "3.13.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-heading/-/extension-heading-3.13.0.tgz#ead7f224de24ac66bb198cabe6b2af9617967583"
   integrity sha512-8VKWX8waYPtUWN97J89em9fOtxNteh6pvUEd0htcOAtoxjt2uZjbW5N4lKyWhNKifZBrVhH2Cc2NUPuftCVgxw==
+
+"@tiptap/extension-highlight@^3.14.0":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-highlight/-/extension-highlight-3.14.0.tgz#332fb27868c93ac706efe4bede8a6be481723ae5"
+  integrity sha512-D4SsD4karzlRIIHarZ9C0+gCQ0CPtp2LFyG93RE8GQzi+RgV+B2AaAiWPizXfRs9AN93neLBQ33EkuR9CbDzUw==
 
 "@tiptap/extension-horizontal-rule@^3.13.0":
   version "3.13.0"
@@ -777,6 +787,13 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.8.tgz#958b91c991b1867ced318bedea0e215ee050726e"
   integrity sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==
 
+"@types/hast@^3.0.0":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@types/hast/-/hast-3.0.4.tgz#1d6b39993b82cea6ad783945b0508c25903e15aa"
+  integrity sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==
+  dependencies:
+    "@types/unist" "*"
+
 "@types/linkify-it@^5":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@types/linkify-it/-/linkify-it-5.0.0.tgz#21413001973106cda1c3a9b91eedd4ccd5469d76"
@@ -806,6 +823,11 @@
   version "1.6.7"
   resolved "https://registry.yarnpkg.com/@types/phoenix/-/phoenix-1.6.7.tgz#75137b7ecf732ceaca284cf10c1552071cfff12f"
   integrity sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==
+
+"@types/unist@*":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@types/unist/-/unist-3.0.3.tgz#acaab0f919ce69cce629c2d4ed2eb4adc1b6c20c"
+  integrity sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==
 
 "@types/use-sync-external-store@^0.0.6":
   version "0.0.6"
@@ -874,6 +896,18 @@ debug@^4.1.0, debug@^4.3.1:
   dependencies:
     ms "^2.1.3"
 
+dequal@^2.0.0:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/dequal/-/dequal-2.0.3.tgz#2644214f1997d39ed0ee0ece72335490a7ac67be"
+  integrity sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==
+
+devlop@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/devlop/-/devlop-1.1.0.tgz#4db7c2ca4dc6e0e834c30be70c94bbc976dc7018"
+  integrity sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==
+  dependencies:
+    dequal "^2.0.0"
+
 electron-to-chromium@^1.5.263:
   version "1.5.267"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.267.tgz#5d84f2df8cdb6bfe7e873706bb21bd4bfb574dc7"
@@ -938,6 +972,11 @@ gensync@^1.0.0-beta.2:
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
   integrity sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==
 
+highlight.js@~11.11.0:
+  version "11.11.1"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-11.11.1.tgz#fca06fa0e5aeecf6c4d437239135fabc15213585"
+  integrity sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==
+
 iceberg-js@^0.8.1:
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/iceberg-js/-/iceberg-js-0.8.1.tgz#47d893468293a010385e1c70123f29d0fc1d9912"
@@ -976,6 +1015,15 @@ loose-envify@^1.1.0:
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
+
+lowlight@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/lowlight/-/lowlight-3.3.0.tgz#007b8a5bfcfd27cc65b96246d2de3e9dd4e23c6c"
+  integrity sha512-0JNhgFoPvP6U6lE/UdVsSq99tn6DhjjpAj5MxG49ewd2mOBVtwWYIT8ClyABhq198aXXODMU6Ox8DrGy/CpTZQ==
+  dependencies:
+    "@types/hast" "^3.0.0"
+    devlop "^1.0.0"
+    highlight.js "~11.11.0"
 
 lru-cache@^5.1.1:
   version "5.1.1"

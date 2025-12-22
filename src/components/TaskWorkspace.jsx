@@ -170,11 +170,23 @@ function TaskWorkspace() {
     }
   }, [taskId, getTaskById, state.isLoading, navigate, state.tasks]);
 
+  // Debounce title updates
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (task && title !== task.title && title.trim()) {
+        updateTask(task.projectId, task.id, { title: title.trim() });
+      }
+    }, 1000); // 1 second debounce for title
+
+    return () => clearTimeout(timer);
+  }, [title, task, updateTask]);
+
   if (!task) return <div className="loading-workspace">Loading...</div>;
 
+  // Handle manual blur just in case
   const handleTitleBlur = () => {
-    if (title.trim() && title !== task.title) {
-      updateTask(task.projectId, task.id, { title: title.trim() });
+    if (title.trim() && task && title !== task.title) {
+       updateTask(task.projectId, task.id, { title: title.trim() });
     }
   };
 

@@ -4,6 +4,7 @@ import { getProjects, saveProjects, getTasks, saveTasks, getTheme, saveTheme } f
 import { formatDateKey } from '../utils/dateUtils';
 import { useAuth } from './AuthContext';
 import * as db from '../utils/dbService';
+import { supabase } from '../utils/supabaseClient';
 
 // Initial state
 const initialState = {
@@ -159,6 +160,46 @@ function appReducer(state, action) {
         selectedTask: state.selectedTask?.id === taskId ? null : state.selectedTask
       };
     }
+
+    case 'DELETE_TASK_BY_ID': {
+      const taskIdToDelete = action.payload;
+      // We need to find the task in the state to remove it
+      let newTasks = { ...state.tasks };
+      let found = false;
+      let updatedSelectedTask = state.selectedTask;
+
+      // Iterate through all projects and dates to find and remove the task
+      for (const projectId of Object.keys(newTasks)) {
+        const projectTasks = { ...newTasks[projectId] };
+        let projectModified = false;
+
+        for (const dateKey of Object.keys(projectTasks)) {
+          const dateTasks = projectTasks[dateKey];
+          const taskIndex = dateTasks.findIndex(t => t.id === taskIdToDelete);
+
+          if (taskIndex !== -1) {
+             projectTasks[dateKey] = dateTasks.filter(t => t.id !== taskIdToDelete);
+             projectModified = true;
+             found = true;
+             if (state.selectedTask?.id === taskIdToDelete) {
+               updatedSelectedTask = null;
+             }
+             break; // Found it, no need to check other dates for this task (ID is unique)
+          }
+        }
+
+        if (projectModified) {
+          newTasks[projectId] = projectTasks;
+        }
+        if (found) break;
+      }
+
+      return {
+        ...state,
+        tasks: newTasks,
+        selectedTask: updatedSelectedTask
+      };
+    }
     
     case ACTIONS.SELECT_TASK:
       return { ...state, selectedTask: action.payload };
@@ -213,6 +254,87 @@ export function AppProvider({ children }) {
             type: ACTIONS.INIT_DATA,
             payload: { projects, tasks, theme }
           });
+          
+          // Setup Realtime Subscriptions
+          const channel = supabase
+            .channel('db-changes')
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'projects' },
+              (payload) => {
+                if (payload.errors) return;
+                
+                // Handle different events
+                switch (payload.eventType) {
+                  case 'INSERT':
+                    dispatch({ type: ACTIONS.ADD_PROJECT, payload: payload.new });
+                    break;
+                  case 'UPDATE':
+                    dispatch({ type: ACTIONS.UPDATE_PROJECT, payload: payload.new });
+                    break;
+                  case 'DELETE':
+                    dispatch({ type: ACTIONS.DELETE_PROJECT, payload: payload.old.id });
+                    break;
+                }
+              }
+            )
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'tasks' },
+              (payload) => {
+                if (payload.errors) return;
+
+                switch (payload.eventType) {
+                  case 'INSERT': {
+                    dispatch({ type: ACTIONS.ADD_TASK, payload: payload.new });
+                    break;
+                  }
+                  case 'UPDATE': {
+                    const task = payload.new;
+                    dispatch({ 
+                      type: ACTIONS.UPDATE_TASK, 
+                      payload: { 
+                        projectId: task.project_id, 
+                        taskId: task.id, 
+                        updates: {
+                          title: task.title,
+                          content: task.content,
+                          status: task.status,
+                          priority: task.priority,
+                          estimatedDays: task.estimated_days
+                        }
+                      } 
+                    });
+                    break;
+                  }
+                  case 'DELETE': {
+                    // Start of a tricky part: we need to know the projectId and dateKey to remove it from state efficiently
+                    // But payload.old ONLY gives us the ID for DELETE events.
+                    // So we search for it in our state helper
+                    // dispatching straight with ID might require a new reducer case or searching in reducer
+                    // Let's rely on a helper to find it first if possible, but we can't access state here easily inside useEffect without refs or function updater
+                    // Simplest way: Dispatch a DELETE_TASK_BY_ID action (we need to add it) or iterate entire state in reducer
+                    // Actually, let's just dispatch a generic sync action or improve DELETE_TASK
+                    
+                    // We'll trust the reducer can handle finding it if we provide the ID, or we add a specific action.
+                    // However, standard DELETE_TASK requires projectId and dateKey.
+                    // Let's modify DELETE_TASK or add DELETE_TASK_BY_ID.
+                    // For now, let's assume we can fetch the missing info or use a new action.
+                    
+                    // Ideally, we'd fetch the deleted row, but it's deleted.
+                    // We will implement DELETE_TASK_BY_ID in the reducer.
+                     dispatch({ type: 'DELETE_TASK_BY_ID', payload: payload.old.id });
+                    break;
+                  }
+                }
+              }
+            )
+            .subscribe();
+            
+          return () => {
+             supabase.removeChannel(channel);
+          };
+          
         } catch (error) {
           console.error('Error loading data from Supabase:', error);
           // Fallback to empty state
