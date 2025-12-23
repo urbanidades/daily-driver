@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Image } from '@tiptap/extension-image';
+import { ResizableImage } from './extensions/ResizableImage';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -15,6 +15,8 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { AiPromptNode } from './extensions/AiPromptNode';
 import { CalloutNode } from './extensions/CalloutNode';
+import { ToggleNode } from './extensions/ToggleNode';
+import { uploadImage } from '../utils/upload';
 import './TaskEditor.css';
 
 const lowlight = createLowlight(common);
@@ -86,6 +88,19 @@ const BASE_SLASH_COMMANDS = [
     icon: 'table_chart', 
     description: 'Add a table for structured data',
     command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() 
+  },
+  { 
+    name: 'Toggle', 
+    icon: 'expand_more', 
+    description: 'Collapsible section',
+    description: 'Collapsible section',
+    command: (editor) => editor.chain().focus().setToggle().run() 
+  },
+  { 
+    name: 'Image', 
+    icon: 'image', 
+    description: 'Upload or embed image',
+    command: () => document.getElementById('image-upload-trigger').click() 
   },
 ];
 
@@ -205,7 +220,7 @@ function TaskEditor({
       CodeBlockLowlight.configure({
         lowlight,
       }),
-      Image,
+      ResizableImage,
       Table.configure({
         resizable: true,
       }),
@@ -217,11 +232,55 @@ function TaskEditor({
         nested: true,
       }),
       CalloutNode,
+      ToggleNode,
       AiPromptNode,
     ],
     // Initial content - only used on mount (uncontrolled)
     content: content || '',
+    content: content || '',
     editorProps: {
+      handlePaste: (view, event) => {
+        const item = event.clipboardData?.items[0];
+        if (item?.type.indexOf('image') === 0) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          
+          if (file) {
+            uploadImage(file).then(url => {
+              if (url) {
+                const { schema } = view.state;
+                const node = schema.nodes.image.create({ src: url });
+                const transaction = view.state.tr.replaceSelectionWith(node);
+                view.dispatch(transaction);
+              }
+            });
+            return true;
+          }
+        }
+        return false;
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+          const file = event.dataTransfer.files[0];
+          if (file.type.indexOf('image') === 0) {
+            event.preventDefault();
+            
+            uploadImage(file).then(url => {
+              if (url) {
+                const { schema } = view.state;
+                const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                if (coordinates) {
+                  const node = schema.nodes.image.create({ src: url });
+                  const transaction = view.state.tr.insert(coordinates.pos, node);
+                  view.dispatch(transaction);
+                }
+              }
+            });
+            return true;
+          }
+        }
+        return false;
+      },
       handleKeyDown: (view, event) => {
         // Intercept keyboard events when slash menu is open
         if (!showSlashMenuRef.current) return false;
@@ -837,6 +896,25 @@ function TaskEditor({
       onDrop={handleDrop}
       onDragEnd={handleDragEnd}
     >
+      {/* Hidden File Input for Image Upload */}
+      <input 
+        type="file" 
+        id="image-upload-trigger" 
+        style={{ display: 'none' }} 
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file && editor) {
+            uploadImage(file).then(url => {
+              if (url) {
+                editor.chain().focus().setImage({ src: url }).run();
+              }
+            });
+            e.target.value = ''; // Reset
+          }
+        }}
+      />
+
       {/* Drop Indicator */}
       {isDragging && dropIndicatorTop !== null && (
         <div 

@@ -61,3 +61,14 @@
   - [x] **Text Highlighting**: Mark important insights with custom highlights.
   - [x] **Smart Auto-save**: Title and content sync instantly without manual saving.
   - [x] **UI Polish**: Notion-like checkboxes and perfect title alignment.
+
+## v1.6.0 - Advanced Editor Blocks
+- **Status**: Completed ✅
+- **Release Date**: 2025-12-22
+- **Summary**: Major editor power-ups with Collapsible Toggles and Drag-and-Drop Image handling.
+- **Features**:
+  - [x] **Toggle Blocks**: Create collapsible sections with `/toggle` or `>`.
+  - [x] **Image Uploads**: Drag & drop or paste images directly into the editor.
+  - [x] **Supabase Storage**: Secure cloud storage for all your task images.
+  - [x] **Resize Handles**: Interactive resizing for images directly in the editor.
+  - [x] **Image Slash Command**: Quick upload via `/image` command.
