@@ -131,16 +131,35 @@
   transform: translateY(-1px);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .header {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    padding-top: calc(var(--spacing-xs) + var(--safe-area-top));
+    height: calc(var(--mobile-header-height) + var(--safe-area-top));
   }
   
-  .header-logo-text {
-    display: none;
+  .header-content {
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .header-left {
+    left: var(--spacing-sm);
+  }
+  
+  .header-right {
+    right: var(--spacing-sm);
+  }
+
+  .header-logo-full {
+    height: 28px;
   }
   
   .header-breadcrumbs {
+    display: none;
+  }
+
+  /* Hide settings button on mobile - BottomNav handles it */
+  .header-logout-btn {
     display: none;
   }
 }

@@ -72,3 +72,35 @@
   - [x] **Supabase Storage**: Secure cloud storage for all your task images.
   - [x] **Resize Handles**: Interactive resizing for images directly in the editor.
   - [x] **Image Slash Command**: Quick upload via `/image` command.
+
+## v1.7.0 - Mobile App Foundation
+- **Status**: Completed ✅
+- **Release Date**: 2025-12-26
+- **Summary**: Transforming Daily Driver into a native mobile app using Capacitor.
+- **Features**:
+  - [x] **Capacitor Setup**: iOS and Android native project scaffolding.
+  - [x] **Safe Area CSS**: Support for device notches and home indicators.
+  - [x] **Bottom Navigation**: Native-feeling tab bar for mobile.
+  - [x] **Mobile Header**: Compact header with safe-area padding.
+  - [x] **Horizontal Projects**: Touch-friendly scrollable project list.
+  - [x] **Deep Linking**: Supabase OAuth for native apps (`com.dailydriver.app`).
+  - [x] **App Icons & Splash**: Branded app assets.
+
+## v1.8.0 - Mobile Polish
+- **Status**: Planned 🗓️
+- **Summary**: Native mobile interactions and UI refinements.
+- **Features**:
+  - [ ] **Mobile Toolbar**: Notion-style bar with (+) expander to hide keyboard.
+  - [ ] **Project Renaming**: UI to edit project names.
+  - [ ] **Haptic Feedback**: Vibration on interactions (drag, check, nav).
+  - [ ] **Pull-to-Refresh**: Reload dashboard data on pull.
+  - [ ] **Swipe Actions**: Swipe tasks to Delete/Complete.
+  - [ ] **Dynamic Status Bar**: Match status bar color with theme.
+
+## v1.9.0 - AI Power-Ups
+- **Status**: Planned 🗓️
+- **Summary**: "Bring Your Own Key" for unlimited AI usage and model selection.
+- **Features**:
+  - [ ] **BYOK Settings**: Forms to save OpenAI/Gemini/Claude keys.
+  - [ ] **Model Selector**: Choose active model (GPT-4o, GPT-5.2, Claude 4.5, etc.).
+  - [ ] **Unified AI Service**: Multi-provider architecture.

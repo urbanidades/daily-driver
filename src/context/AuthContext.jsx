@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 
 const AuthContext = createContext();
 
@@ -29,14 +31,56 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for deep link redirects from OAuth (Native only)
+    if (Capacitor.isNativePlatform()) {
+      const handleAppUrlOpen = CapacitorApp.addListener('appUrlOpen', async ({ url }) => {
+        console.log('Deep link received:', url);
+        // Check if URL contains auth tokens
+        if (url.includes('access_token') || url.includes('refresh_token') || url.includes('code=')) {
+          // Extract hash or query parameters
+          const hashParams = new URLSearchParams(url.split('#')[1] || '');
+          
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          
+          if (accessToken && refreshToken) {
+            // Set session from tokens
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (error) {
+              console.error('Error setting session from deep link:', error);
+            }
+          }
+        }
+      });
+    }
+
+    return () => {
+      subscription.unsubscribe();
+      if (Capacitor.isNativePlatform()) {
+        CapacitorApp.removeAllListeners();
+      }
+    };
   }, []);
 
   const value = {
     signUp: (data) => supabase.auth.signUp(data),
     signIn: (data) => supabase.auth.signInWithPassword(data),
     signInWithOtp: (data) => supabase.auth.signInWithOtp(data),
-    signInWithOAuth: (provider) => supabase.auth.signInWithOAuth({ provider }),
+    signInWithOAuth: (provider) => {
+        const redirectTo = Capacitor.isNativePlatform() 
+            ? 'com.dailydriver.app://login' 
+            : window.location.origin;
+            
+        return supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                redirectTo,
+            },
+        });
+    },
     signOut: () => supabase.auth.signOut(),
     user,
   };

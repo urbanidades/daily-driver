@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { 
@@ -153,6 +153,11 @@ function Dashboard() {
   const [draggedProject, setDraggedProject] = useState(null);
   const [dragOverSection, setDragOverSection] = useState(null);
 
+  // Refs for touch drag detection
+  const workSectionRef = useRef(null);
+  const personalSectionRef = useRef(null);
+  const touchDragRef = useRef({ project: null, startY: 0 });
+
   const handleDragStart = (e, project) => {
     setDraggedProject(project);
     e.dataTransfer.effectAllowed = 'move';
@@ -188,6 +193,36 @@ function Dashboard() {
     setDragOverSection(null);
   };
 
+  // Touch handlers for mobile drag-and-drop
+  const handleTouchStart = (e, project) => {
+    touchDragRef.current = { project, startY: e.touches[0].clientY };
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchDragRef.current.project) return;
+    
+    const touchY = e.touches[0].clientY;
+    const workRect = workSectionRef.current?.getBoundingClientRect();
+    const personalRect = personalSectionRef.current?.getBoundingClientRect();
+
+    if (workRect && touchY >= workRect.top && touchY <= workRect.bottom) {
+      setDragOverSection('work');
+    } else if (personalRect && touchY >= personalRect.top && touchY <= personalRect.bottom) {
+      setDragOverSection('personal');
+    } else {
+      setDragOverSection(null);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    const project = touchDragRef.current.project;
+    if (project && dragOverSection && project.type !== dragOverSection) {
+      updateProject(project.id, { type: dragOverSection });
+    }
+    touchDragRef.current = { project: null, startY: 0 };
+    setDragOverSection(null);
+  };
+
   const renderProjectItem = (project) => (
     <div 
       key={project.id}
@@ -196,6 +231,9 @@ function Dashboard() {
       draggable
       onDragStart={(e) => handleDragStart(e, project)}
       onDragEnd={handleDragEnd}
+      onTouchStart={(e) => handleTouchStart(e, project)}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <div 
         className="project-color-dot" 
@@ -258,6 +296,7 @@ function Dashboard() {
         
         {/* Work Section */}
         <div 
+          ref={workSectionRef}
           className={`sidebar-section ${dragOverSection === 'work' ? 'drag-over' : ''}`}
           onDragOver={(e) => handleDragOver(e, 'work')}
           onDragLeave={handleDragLeave}
@@ -279,6 +318,7 @@ function Dashboard() {
         
         {/* Personal Section */}
         <div 
+          ref={personalSectionRef}
           className={`sidebar-section ${dragOverSection === 'personal' ? 'drag-over' : ''}`}
           onDragOver={(e) => handleDragOver(e, 'personal')}
           onDragLeave={handleDragLeave}

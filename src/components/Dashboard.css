@@ -9,7 +9,7 @@
 /* Sidebar */
 .dashboard-sidebar {
   width: 220px;
-  background: var(--surface);
+  background: var(--background);
   border-right: 1px solid var(--border);
   border-radius: 0 12px 12px 0;
   display: flex;
@@ -543,26 +543,157 @@
 @media (max-width: 768px) {
   .dashboard {
     flex-direction: column;
+    height: 100%;
+    margin-top: calc(-1 * var(--spacing-sm)); /* Reduce gap from header */
   }
   
   .dashboard-sidebar {
     width: 100%;
-    max-height: 200px;
+    max-height: none;
+    height: auto;
+    flex-shrink: 0;
+    margin: 0;
     border-right: none;
-    border-bottom: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 0;
+    padding: var(--spacing-sm) 0;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    background: var(--background) !important;
   }
-  
+
+  .sidebar-header {
+    display: none;
+  }
+
+  /* Show section headers on mobile for Work/Personal separation */
+  .sidebar-section {
+    padding: var(--spacing-sm) !important;
+    margin: 0 var(--spacing-sm) !important;
+    border: 2px solid var(--primary-light) !important;
+    border-radius: var(--radius-lg) !important;
+    background: var(--surface) !important; /* LIGHTER than app background */
+    overflow: hidden !important;
+  }
+
+  .sidebar-section-header {
+    display: flex !important;
+    padding: var(--spacing-xs) var(--spacing-sm) !important;
+    font-size: 0.65rem !important;
+    margin-bottom: var(--spacing-xs) !important;
+    gap: var(--spacing-xs) !important;
+  }
+
+  .sidebar-section-header .project-count {
+    display: none !important;
+  }
+
+  .sidebar-project-list {
+    flex-direction: row !important;
+    gap: var(--spacing-sm) !important;
+    padding: 0 !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .sidebar-project-list::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Project card styling - lighter pillars */
+  .sidebar-project-item {
+    flex-shrink: 0 !important;
+    padding: 6px 16px !important;
+    background: rgba(255, 255, 255, 0.08) !important; /* Brighter/Neutral Pill Background */
+    border-radius: var(--radius-full) !important;
+    border: none !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    min-width: max-content !important;
+  }
+
+  .sidebar-project-item:active {
+    transform: scale(0.97);
+    background: var(--primary);
+    color: white;
+  }
+
+  .project-actions {
+    display: none;
+  }
+
   .dashboard-main {
     padding: var(--spacing-md);
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .dashboard-header {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .dashboard-title h1 {
+    font-size: 1.25rem;
   }
   
   .calendar-day {
-    min-height: 60px;
+    min-height: 48px;
     padding: 4px;
+    overflow: hidden;
   }
   
+  /* Calendar dots instead of chips on mobile */
+  .calendar-day-tasks {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 2px;
+  }
+
   .calendar-task-chip {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    padding: 0;
+    border-radius: var(--radius-full);
+    font-size: 0;
+    overflow: hidden;
+    text-indent: -9999px;
+  }
+
+  .calendar-more-tasks {
+    display: none;
+  }
+
+  .calendar-header {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .calendar-month-title {
+    font-size: 1rem;
+    min-width: auto;
+    order: -1;
+    width: 100%;
+    text-align: left;
+  }
+
+  .calendar-today-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .calendar-weekday {
     font-size: 0.6rem;
-    padding: 1px 4px;
+    padding: var(--spacing-xs);
+  }
+
+  .calendar-day-number {
+    font-size: 0.75rem;
   }
 }
+

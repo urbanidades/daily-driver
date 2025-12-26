@@ -244,18 +244,22 @@
 }
 
 /* Responsive utilities */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .hide-mobile {
     display: none !important;
   }
   
   .main-content {
     padding: var(--spacing-md);
+    padding-top: calc(var(--mobile-header-height) + var(--safe-area-top) + var(--spacing-xs));
+    padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + var(--spacing-md));
   }
 }
 
-@media (min-width: 641px) {
+
+@media (min-width: 769px) {
   .hide-desktop {
     display: none !important;
   }
 }
+

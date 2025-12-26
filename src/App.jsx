@@ -9,6 +9,7 @@ import DayView from './components/DayView';
 import LoginPage from './components/LoginPage';
 import TaskWorkspace from './components/TaskWorkspace';
 import Settings from './components/Settings';
+import BottomNav from './components/BottomNav';
 import './index.css';
 import './App.css';
 
@@ -34,6 +35,7 @@ function AppContent() {
           </Routes>
         </main>
       </div>
+      <BottomNav />
     </div>
   );
 }

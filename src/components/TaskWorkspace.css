@@ -557,23 +557,60 @@
   }
 }
 
+/* Mobile Settings Trigger - hidden by default */
+.mobile-settings-trigger {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .task-workspace {
-    flex-direction: column-reverse;
+    flex-direction: column;
+    height: 100%;
+    margin-top: calc(-1 * var(--spacing-sm)); /* Reduce gap from header */
   }
   
+  /* Hide sidebar completely on mobile - use drawer instead */
   .task-workspace-sidebar {
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-top: 1px solid var(--border);
+    display: none;
   }
   
   .task-workspace-main {
-    padding: 1.5rem;
+    padding: var(--spacing-md);
+    padding-bottom: calc(var(--spacing-xl) + 60px); /* Space for floating button */
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .workspace-header {
+    margin-bottom: var(--spacing-md);
   }
   
   .workspace-title-input {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+  }
+
+  /* Floating settings button */
+  .mobile-settings-trigger {
+    display: flex;
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + var(--spacing-md));
+    right: var(--spacing-md);
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    border: none;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
+    cursor: pointer;
+    z-index: 100;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .mobile-settings-trigger:active {
+    transform: scale(0.95);
   }
 }
+

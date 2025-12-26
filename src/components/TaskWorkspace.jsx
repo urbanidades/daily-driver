@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import TaskEditor from './TaskEditor';
+import TaskSettingsDrawer from './TaskSettingsDrawer';
 import { formatDateLong } from '../utils/dateUtils';
-import { ChevronLeft, Trash2, Calendar, Target, Flag, Circle, Sparkles, Wand2, Check, X, Layers, Send } from 'lucide-react';
+import { ChevronLeft, Trash2, Calendar, Target, Flag, Circle, Sparkles, Wand2, Check, X, Layers, Send, Settings } from 'lucide-react';
 import { improveDescription, promptAI, IMPROVEMENT_OPTIONS } from '../utils/aiService';
 import { supabase } from '../utils/supabaseClient';
 import './TaskWorkspace.css';
@@ -93,6 +94,7 @@ function TaskWorkspace() {
   const [editorKey, setEditorKey] = useState(0); // Force editor refresh
   const [showPromptModal, setShowPromptModal] = useState(false);
   const [promptText, setPromptText] = useState('');
+  const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
   
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
@@ -629,6 +631,30 @@ function TaskWorkspace() {
           />
         </div>
       </main>
+
+      {/* Mobile Settings Trigger */}
+      <button 
+        className="mobile-settings-trigger"
+        onClick={() => setShowSettingsDrawer(true)}
+        aria-label="Task Settings"
+      >
+        <Settings size={20} />
+      </button>
+
+      {/* Mobile Settings Drawer */}
+      <TaskSettingsDrawer
+        isOpen={showSettingsDrawer}
+        onClose={() => setShowSettingsDrawer(false)}
+        task={task}
+        onStatusChange={handleStatusChange}
+        onPriorityChange={handlePriorityChange}
+        onEffortChange={(days) => updateTask(task.projectId, task.id, { estimatedDays: days })}
+        onDelete={handleDelete}
+        onOpenAiPanel={() => {
+          setShowSettingsDrawer(false);
+          setShowAiPanel(true);
+        }}
+      />
     </div>
   );
 }

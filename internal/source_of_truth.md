@@ -5,6 +5,7 @@
 
 ## Tech Stack
 - **Framework**: React 18 (Vite)
+- **Mobile Runtime**: Capacitor v6 (iOS & Android)
 - **Styling**: Vanilla CSS with CSS Variables for theming (No Tailwind)
 - **Routing**: React Router v6
 - **State**: Context API (`AppContext`, `AuthContext`)
@@ -27,6 +28,7 @@
 - **Header**: Fixed position, 52px height, rounded bottom corners.
 - **Sidebars**: 220px width, rounded right corners.
 - **Env Vars**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_OPENAI_API_KEY`
+- **Mobile Scheme**: `com.dailydriver.app://` for Deep Linking
 
 ## AI Features
 - **Enhance Mode**: Polish, Concise, Detailed, Actionable options

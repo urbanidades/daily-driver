@@ -93,7 +93,6 @@ const BASE_SLASH_COMMANDS = [
     name: 'Toggle', 
     icon: 'expand_more', 
     description: 'Collapsible section',
-    description: 'Collapsible section',
     command: (editor) => editor.chain().focus().setToggle().run() 
   },
   { 
@@ -236,7 +235,6 @@ function TaskEditor({
       AiPromptNode,
     ],
     // Initial content - only used on mount (uncontrolled)
-    content: content || '',
     content: content || '',
     editorProps: {
       handlePaste: (view, event) => {

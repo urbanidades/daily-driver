@@ -57,6 +57,16 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
+
+  /* Safe Area (for mobile notches/home indicators) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Mobile Layout */
+  --bottom-nav-height: 64px;
+  --mobile-header-height: 56px;
 }
 
 /* Light theme (default) */
@@ -169,3 +179,17 @@ a {
   white-space: nowrap;
   border: 0;
 }
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  body {
+    padding-top: var(--safe-area-top);
+    padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
+  }
+
+  /* Hide scrollbars on mobile for cleaner look */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+

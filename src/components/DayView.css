@@ -292,7 +292,11 @@
   color: var(--text-main);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .day-view {
+    padding: 0;
+  }
+
   .day-nav {
     flex-direction: column;
     gap: var(--spacing-md);
@@ -308,3 +312,5 @@
     justify-content: center;
   }
 }
+
+
