@@ -9,7 +9,8 @@ Phase 9.1: Decisions + Failure Modes — Implement reject/skip/revise/stop decis
 | Agent | Task | Status | Started | Blocked By |
 |-------|------|--------|---------|------------|
 | Orchestator | Control Plane Setup | ✅ Done | 2025-12-30 | - |
-| Debugger | Fix Typing Lag/Race Condition | 🔵 Planning | 2026-01-02 | - |
+| Debugger | Fix Typing Lag/Race Condition | ✅ Done | 2026-01-02 | - |
+| Debugger | Fix Dashboard Layout Regression | 🔵 Planning | 2026-01-02 | - |
 
 ## Status Legend
 - 🟢 Active
