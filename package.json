@@ -14,7 +14,10 @@
     "@capacitor/app": "^6.0.0",
     "@capacitor/cli": "6",
     "@capacitor/core": "6",
+    "@capacitor/haptics": "^6.0.3",
     "@capacitor/ios": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.4",
+    "@capacitor/status-bar": "^6.0.3",
     "@supabase/supabase-js": "^2.88.0",
     "@tiptap/extension-bubble-menu": "^3.13.0",
     "@tiptap/extension-code-block-lowlight": "^3.14.0",
@@ -35,6 +38,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
+    "react-swipeable": "^7.0.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

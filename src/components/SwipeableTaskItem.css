@@ -1,0 +1,55 @@
+/* SwipeableTaskItem Styles */
+
+.swipeable-task-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.swipe-background {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+}
+
+.swipe-background.complete {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  justify-content: flex-start;
+  padding-left: var(--spacing-lg);
+}
+
+.swipe-background.delete {
+  background: linear-gradient(270deg, #ef4444 0%, #dc2626 100%);
+  justify-content: flex-end;
+  padding-right: var(--spacing-lg);
+}
+
+.swipe-action {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.swipeable-task-content {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  z-index: 1;
+  cursor: pointer;
+}
+
+.swipeable-task-content.selected {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* Task item styling within swipeable */
+.swipeable-task-content .task-item {
+  margin-bottom: 0;
+  border-radius: var(--radius-md);
+}

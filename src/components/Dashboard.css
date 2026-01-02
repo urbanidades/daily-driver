@@ -1,9 +1,44 @@
 .dashboard {
   display: flex;
+  flex-direction: row;
   height: calc(100vh - 52px);
   margin-top: 52px;
   background: var(--background);
   color: var(--text-main);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Pull-to-Refresh Indicator */
+.ptr-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.ptr-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--primary);
+}
+
+.ptr-spinner.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Sidebar */
@@ -208,7 +243,7 @@
 }
 
 .project-dropdown-menu button.delete-option {
-  color: #ef4444;
+  color: var(--error);
 }
 
 .project-dropdown-menu button.delete-option:hover {
@@ -697,3 +732,111 @@
   }
 }
 
+/* Inline Rename Input */
+.inline-rename-wrapper {
+  flex: 1;
+  display: flex;
+}
+
+.inline-rename-input {
+  width: 100%;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  background: var(--background);
+  color: var(--text-main);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.sidebar-project-item.editing {
+  background: var(--surface);
+}
+
+/* Edit option icon */
+.edit-option {
+    color: var(--text-main);
+}
+
+/* Mobile Action Sheet */
+.mobile-action-sheet-overlay {
+  display: none; /* Hidden on desktop */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mobile-action-sheet {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--spacing-md);
+  padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.action-sheet-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--spacing-xs);
+}
+
+.action-sheet-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.mobile-action-sheet button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.mobile-action-sheet button:active {
+  background: var(--hover);
+}
+
+.mobile-action-sheet .cancel-option {
+  margin-top: var(--spacing-sm);
+  background: var(--hover);
+  justify-content: center;
+  font-weight: 500;
+}
+
+/* Show action sheet only on mobile */
+@media (max-width: 768px) {
+  .mobile-action-sheet-overlay {
+    display: flex;
+  }
+}

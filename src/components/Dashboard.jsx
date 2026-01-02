@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { 
@@ -9,7 +9,9 @@ import {
   formatDateKey,
   formatDateDisplay
 } from '../utils/dateUtils';
-import { Eye, EyeOff, Plus, Briefcase, Home, ChevronLeft, ChevronRight, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Plus, Briefcase, Home, ChevronLeft, ChevronRight, MoreHorizontal, Trash2, Edit2, Check } from 'lucide-react';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
+import haptic from '../utils/haptics';
 import './Dashboard.css';
 
 // Project type colors for calendar
@@ -32,7 +34,8 @@ function Dashboard() {
     deleteProject,
     selectProject, 
     setSelectedDate,
-    getProjectTasks 
+    getProjectTasks,
+    refreshData
   } = useApp();
   const navigate = useNavigate();
   
@@ -41,11 +44,24 @@ function Dashboard() {
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectType, setNewProjectType] = useState('personal');
   const [menuOpenId, setMenuOpenId] = useState(null);
+  const [editingProjectId, setEditingProjectId] = useState(null);
+  const [editingName, setEditingName] = useState('');
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  
+  // Pull-to-refresh state
+  const [pullDistance, setPullDistance] = useState(0);
+  const pullStartY = useRef(0);
+  const isPulling = useRef(false);
+  const PULL_THRESHOLD = 80;
   
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
   const today = formatDateDisplay(new Date());
   
+  // Refs for touch interactions
+  const longPressTimerRef = useRef(null);
+  const touchStartPosRef = useRef(null);
+
   // Group projects by type
   const workProjects = state.projects.filter(p => p.type === 'work');
   const personalProjects = state.projects.filter(p => p.type === 'personal' || !p.type);
@@ -110,6 +126,7 @@ function Dashboard() {
   };
   
   const handleProjectClick = (projectId) => {
+    if (editingProjectId === projectId) return; // Don't navigate if editing
     selectProject(projectId);
     navigate(`/project/${projectId}`);
   };
@@ -136,12 +153,30 @@ function Dashboard() {
     }
   };
   
-  const handleDeleteProject = (e, projectId) => {
-    e.stopPropagation();
-    if (confirm('Are you sure you want to delete this project? All tasks will be lost.')) {
-      deleteProject(projectId);
-    }
-    setMenuOpenId(null);
+  const startEditing = (e, project) => {
+      e.stopPropagation();
+      setEditingProjectId(project.id);
+      setEditingName(project.name);
+      setMenuOpenId(null);
+  };
+
+  const saveEditing = () => {
+      if (editingProjectId && editingName.trim()) {
+          updateProject(editingProjectId, { name: editingName.trim() });
+      }
+      setEditingProjectId(null);
+      setEditingName('');
+  };
+
+  const cancelEditing = () => {
+      setEditingProjectId(null);
+      setEditingName('');
+  };
+
+  const confirmDelete = (e, project) => {
+      e.stopPropagation();
+      setProjectToDelete(project);
+      setMenuOpenId(null);
   };
   
   const handleMenuClick = (e, projectId) => {
@@ -157,8 +192,13 @@ function Dashboard() {
   const workSectionRef = useRef(null);
   const personalSectionRef = useRef(null);
   const touchDragRef = useRef({ project: null, startY: 0 });
+  const longPressTriggeredRef = useRef(false);
 
   const handleDragStart = (e, project) => {
+    if (editingProjectId) {
+        e.preventDefault();
+        return;
+    }
     setDraggedProject(project);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', project.id);
@@ -193,8 +233,20 @@ function Dashboard() {
     setDragOverSection(null);
   };
 
-  // Touch handlers for mobile drag-and-drop
+  // Touch handlers for mobile drag-and-drop & Long Press
   const handleTouchStart = (e, project) => {
+    // Start long press timer
+    longPressTriggeredRef.current = false;
+    touchStartPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    longPressTimerRef.current = setTimeout(() => {
+        // Long press detected!
+        longPressTriggeredRef.current = true;
+        haptic.medium(); // Haptic feedback on menu open
+        setMenuOpenId(project.id);
+        // Clear drag ref so we don't start dragging
+        touchDragRef.current = { project: null, startY: 0 };
+    }, 500); // 500ms long press
+
     touchDragRef.current = { project, startY: e.touches[0].clientY };
   };
 
@@ -202,6 +254,15 @@ function Dashboard() {
     if (!touchDragRef.current.project) return;
     
     const touchY = e.touches[0].clientY;
+    
+    // Check if moved enough to cancel long press
+    if (touchStartPosRef.current && Math.abs(touchY - touchStartPosRef.current.y) > 20) { // Increased threshold to 20px
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+    }
+
     const workRect = workSectionRef.current?.getBoundingClientRect();
     const personalRect = personalSectionRef.current?.getBoundingClientRect();
 
@@ -215,6 +276,12 @@ function Dashboard() {
   };
 
   const handleTouchEnd = () => {
+    // Clear long press timer
+    if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+    }
+
     const project = touchDragRef.current.project;
     if (project && dragOverSection && project.type !== dragOverSection) {
       updateProject(project.id, { type: dragOverSection });
@@ -223,65 +290,157 @@ function Dashboard() {
     setDragOverSection(null);
   };
 
-  const renderProjectItem = (project) => (
-    <div 
-      key={project.id}
-      className={`sidebar-project-item ${project.visible === false ? 'hidden-project' : ''}`}
-      onClick={() => handleProjectClick(project.id)}
-      draggable
-      onDragStart={(e) => handleDragStart(e, project)}
-      onDragEnd={handleDragEnd}
-      onTouchStart={(e) => handleTouchStart(e, project)}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div 
-        className="project-color-dot" 
-        style={{ backgroundColor: projectColorMap[project.id] }}
-      />
-      <span className="project-name">{project.name}</span>
-      <div className="project-actions">
-        <button 
-          className="visibility-toggle"
-          onClick={(e) => toggleVisibility(e, project.id)}
-          title={project.visible === false ? 'Show in calendar' : 'Hide from calendar'}
+  const renderProjectItem = (project) => {
+      const isEditing = editingProjectId === project.id;
+
+      return (
+        <div 
+          key={project.id}
+          className={`sidebar-project-item ${project.visible === false ? 'hidden-project' : ''} ${isEditing ? 'editing' : ''}`}
+          draggable={!isEditing}
+          onDragStart={(e) => handleDragStart(e, project)}
+          onDragOver={(e) => e.preventDefault()}
+          onDragEnd={handleDragEnd}
+          onTouchStart={(e) => handleTouchStart(e, project)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onContextMenu={(e) => e.preventDefault()}
+          onClick={(e) => {
+            if (longPressTriggeredRef.current) {
+                // Prevent navigation if long press menu was opened
+                return;
+            }
+            if (editingProjectId !== project.id) {
+                 navigate(`/project/${project.id}`)
+            }
+          }}
         >
-          {project.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
-        </button>
-        <div className="project-menu-wrapper">
-          <button 
-            className="project-menu-btn"
-            onClick={(e) => handleMenuClick(e, project.id)}
-          >
-            <MoreHorizontal size={14} />
-          </button>
-          {menuOpenId === project.id && (
-            <div className="project-dropdown-menu">
-              {project.type !== 'work' && (
-                <button onClick={(e) => changeProjectType(e, project.id, 'work')}>
-                  <Briefcase size={14} /> Move to Work
+          <div 
+            className="project-color-dot" 
+            style={{ backgroundColor: projectColorMap[project.id] }}
+          />
+          
+          {isEditing ? (
+              <div className="inline-rename-wrapper" onClick={e => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onBlur={saveEditing}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveEditing();
+                        if (e.key === 'Escape') cancelEditing();
+                    }}
+                    autoFocus
+                    className="inline-rename-input"
+                  />
+              </div>
+          ) : (
+             <span className="project-name">{project.name}</span>
+          )}
+
+          {!isEditing && (
+              <div className="project-actions">
+                <button 
+                  className="visibility-toggle"
+                  onClick={(e) => toggleVisibility(e, project.id)}
+                  title={project.visible === false ? 'Show in calendar' : 'Hide from calendar'}
+                >
+                  {project.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
-              )}
-              {project.type !== 'personal' && project.type && (
-                <button onClick={(e) => changeProjectType(e, project.id, 'personal')}>
-                  <Home size={14} /> Move to Personal
-                </button>
-              )}
-              <button 
-                className="delete-option"
-                onClick={(e) => handleDeleteProject(e, project.id)}
-              >
-                <Trash2 size={14} /> Delete
-              </button>
-            </div>
+                <div className="project-menu-wrapper">
+                  <button 
+                    className="project-menu-btn"
+                    onClick={(e) => handleMenuClick(e, project.id)}
+                  >
+                    <MoreHorizontal size={14} />
+                  </button>
+                  {menuOpenId === project.id && (
+                    <div className="project-dropdown-menu">
+                      <button onClick={(e) => startEditing(e, project)}>
+                        <Edit2 size={14} /> Rename
+                      </button>
+                      {project.type !== 'work' && (
+                        <button onClick={(e) => changeProjectType(e, project.id, 'work')}>
+                          <Briefcase size={14} /> Move to Work
+                        </button>
+                      )}
+                      {project.type !== 'personal' && project.type && (
+                        <button onClick={(e) => changeProjectType(e, project.id, 'personal')}>
+                          <Home size={14} /> Move to Personal
+                        </button>
+                      )}
+                      <button 
+                        className="delete-option"
+                        onClick={(e) => confirmDelete(e, project)}
+                      style={{ color: 'var(--error)' }}
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
           )}
         </div>
-      </div>
-    </div>
-  );
+      );
+  };
+
+  // Pull-to-refresh handlers
+  const handlePullStart = (e) => {
+    // Only start pull if at top of scroll
+    const dashboard = e.currentTarget;
+    if (dashboard.scrollTop === 0) {
+      pullStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  };
+
+  const handlePullMove = (e) => {
+    if (!isPulling.current || state.isRefreshing) return;
+    
+    const currentY = e.touches[0].clientY;
+    const distance = Math.max(0, (currentY - pullStartY.current) * 0.5); // Dampen the pull
+    setPullDistance(Math.min(distance, PULL_THRESHOLD * 1.5));
+    
+    if (distance > 10) {
+      e.preventDefault(); // Prevent scroll while pulling
+    }
+  };
+
+  const handlePullEnd = async () => {
+    if (!isPulling.current) return;
+    isPulling.current = false;
+    
+    if (pullDistance >= PULL_THRESHOLD && !state.isRefreshing) {
+      haptic.medium(); // Haptic feedback on refresh
+      await refreshData();
+    }
+    setPullDistance(0);
+  };
 
   return (
-    <div className="dashboard">
+    <div 
+      className="dashboard"
+      onTouchStart={handlePullStart}
+      onTouchMove={handlePullMove}
+      onTouchEnd={handlePullEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      {(pullDistance > 0 || state.isRefreshing) && (
+        <div 
+          className="ptr-indicator" 
+          style={{ 
+            height: state.isRefreshing ? 40 : pullDistance,
+            opacity: state.isRefreshing ? 1 : Math.min(pullDistance / PULL_THRESHOLD, 1)
+          }}
+        >
+          <div className={`ptr-spinner ${state.isRefreshing ? 'spinning' : ''}`}>
+            <span className="material-symbols-outlined">refresh</span>
+          </div>
+        </div>
+      )}
+      
       {/* Left Sidebar */}
       <aside className="dashboard-sidebar">
         <div className="sidebar-header">
@@ -454,6 +613,59 @@ function Dashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal 
+        isOpen={!!projectToDelete}
+        projectName={projectToDelete?.name}
+        onClose={() => setProjectToDelete(null)}
+        onConfirm={() => {
+            if (projectToDelete) deleteProject(projectToDelete.id);
+            setProjectToDelete(null);
+        }}
+      />
+
+      {/* Mobile Action Sheet - renders at root level to bypass hidden .project-actions */}
+      {menuOpenId && (
+        <div className="mobile-action-sheet-overlay" onClick={() => setMenuOpenId(null)}>
+          <div className="mobile-action-sheet" onClick={(e) => e.stopPropagation()}>
+            {(() => {
+              const project = state.projects.find(p => p.id === menuOpenId);
+              if (!project) return null;
+              return (
+                <>
+                  <div className="action-sheet-header">
+                    <span className="action-sheet-title">{project.name}</span>
+                  </div>
+                  <button onClick={(e) => startEditing(e, project)}>
+                    <Edit2 size={18} /> Rename
+                  </button>
+                  {project.type !== 'work' && (
+                    <button onClick={(e) => changeProjectType(e, project.id, 'work')}>
+                      <Briefcase size={18} /> Move to Work
+                    </button>
+                  )}
+                  {project.type !== 'personal' && project.type && (
+                    <button onClick={(e) => changeProjectType(e, project.id, 'personal')}>
+                      <Home size={18} /> Move to Personal
+                    </button>
+                  )}
+                  <button 
+                    className="delete-option"
+                    onClick={(e) => confirmDelete(e, project)}
+                    style={{ color: 'var(--error)' }}
+                  >
+                    <Trash2 size={18} /> Delete
+                  </button>
+                  <button className="cancel-option" onClick={() => setMenuOpenId(null)}>
+                    Cancel
+                  </button>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
