@@ -15,7 +15,8 @@ const initialState = {
   selectedTask: null,
   theme: 'light',
   isLoading: true,
-  isSyncing: false
+  isSyncing: false,
+  isRefreshing: false
 };
 
 // Action types
@@ -32,7 +33,8 @@ const ACTIONS = {
   DELETE_TASK: 'DELETE_TASK',
   SELECT_TASK: 'SELECT_TASK',
   COPY_TASK_TO_DATE: 'COPY_TASK_TO_DATE',
-  SET_SYNCING: 'SET_SYNCING'
+  SET_SYNCING: 'SET_SYNCING',
+  SET_REFRESHING: 'SET_REFRESHING'
 };
 
 // Reducer
@@ -49,6 +51,9 @@ function appReducer(state, action) {
 
     case ACTIONS.SET_SYNCING:
       return { ...state, isSyncing: action.payload };
+
+    case ACTIONS.SET_REFRESHING:
+      return { ...state, isRefreshing: action.payload };
       
     case ACTIONS.SET_THEME:
       return { ...state, theme: action.payload };
@@ -386,6 +391,38 @@ export function AppProvider({ children }) {
       type: ACTIONS.SET_THEME, 
       payload: state.theme === 'light' ? 'dark' : 'light' 
     }),
+    
+    // Pull-to-refresh: re-fetch all data from server
+    refreshData: async () => {
+      if (state.isRefreshing) return; // Prevent duplicate refreshes
+      
+      dispatch({ type: ACTIONS.SET_REFRESHING, payload: true });
+      
+      try {
+        if (user) {
+          const [projects, tasks] = await Promise.all([
+            db.fetchProjects(),
+            db.fetchTasks()
+          ]);
+          dispatch({
+            type: ACTIONS.INIT_DATA,
+            payload: { projects, tasks, theme: state.theme }
+          });
+        } else {
+          // Offline mode: just reload from localStorage
+          const projects = getProjects();
+          const tasks = getTasks();
+          dispatch({
+            type: ACTIONS.INIT_DATA,
+            payload: { projects, tasks, theme: state.theme }
+          });
+        }
+      } catch (error) {
+        console.error('Refresh failed:', error);
+      } finally {
+        dispatch({ type: ACTIONS.SET_REFRESHING, payload: false });
+      }
+    },
     
     addProject: async (name, type = 'personal') => {
       if (user) {

@@ -9,6 +9,7 @@ import {
   isToday 
 } from '../utils/dateUtils';
 import AddTaskModal from './AddTaskModal';
+import SwipeableTaskItem from './SwipeableTaskItem';
 import './DayView.css';
 
 function DayView() {
@@ -19,7 +20,9 @@ function DayView() {
     getTasksForDate, 
     selectTask, 
     setSelectedDate,
-    selectProject 
+    selectProject,
+    updateTask,
+    deleteTask
   } = useApp();
   
   const [showAddModal, setShowAddModal] = useState(false);
@@ -50,6 +53,16 @@ function DayView() {
   
   const handleTaskClick = (task) => {
     navigate(`/task/${task.id}`);
+  };
+  
+  const handleCompleteTask = (task) => {
+    // Toggle between done and not_started
+    const newStatus = task.status === 'done' ? 'not_started' : 'done';
+    updateTask(task.id, { status: newStatus });
+  };
+  
+  const handleDeleteTask = (task) => {
+    deleteTask(task.projectId, task.id);
   };
   
   const getDayLabel = () => {
@@ -107,39 +120,41 @@ function DayView() {
           </div>
         ) : (
           tasks.map((task) => (
-            <div
+            <SwipeableTaskItem
               key={task.id}
-              className={`task-item ${task.status} ${state.selectedTask?.id === task.id ? 'selected' : ''}`}
-              onClick={() => handleTaskClick(task)}
+              task={task}
+              onComplete={handleCompleteTask}
+              onDelete={handleDeleteTask}
+              onClick={handleTaskClick}
+              isSelected={state.selectedTask?.id === task.id}
             >
-              <div className="task-item-content">
-                <div className="task-item-status">
-                  <div className={`task-item-status-dot ${task.status}`}></div>
-                </div>
-                <div className="task-item-info">
-                  <h3 className="task-item-title">{task.title}</h3>
-                  <div className="task-item-meta">
-                    {task.priority && task.priority !== 'normal' && (
-                      <span className={`task-item-priority-badge ${task.priority}`}>
-                        <span className="material-symbols-outlined">flag</span>
-                        {task.priority}
-                      </span>
-                    )}
-                    {task.estimatedDays > 0 && (
-                      <span className="task-item-badge">
-                        {task.estimatedDays} day{task.estimatedDays !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                    {task.status === 'canceled' && (
-                      <span className="task-item-badge">Canceled</span>
-                    )}
+              <div className={`task-item ${task.status}`}>
+                <div className="task-item-content">
+                  <div className="task-item-status">
+                    <div className={`task-item-status-dot ${task.status}`}></div>
+                  </div>
+                  <div className="task-item-info">
+                    <h3 className="task-item-title">{task.title}</h3>
+                    <div className="task-item-meta">
+                      {task.priority && task.priority !== 'normal' && (
+                        <span className={`task-item-priority-badge ${task.priority}`}>
+                          <span className="material-symbols-outlined">flag</span>
+                          {task.priority}
+                        </span>
+                      )}
+                      {task.estimatedDays > 0 && (
+                        <span className="task-item-badge">
+                          {task.estimatedDays} day{task.estimatedDays !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {task.status === 'canceled' && (
+                        <span className="task-item-badge">Canceled</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-              <button className="task-item-menu">
-                <span className="material-symbols-outlined">more_horiz</span>
-              </button>
-            </div>
+            </SwipeableTaskItem>
           ))
         )}
       </div>

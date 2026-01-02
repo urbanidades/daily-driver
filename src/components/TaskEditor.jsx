@@ -18,6 +18,7 @@ import { CalloutNode } from './extensions/CalloutNode';
 import { ToggleNode } from './extensions/ToggleNode';
 import { uploadImage } from '../utils/upload';
 import './TaskEditor.css';
+import { MobileToolbar } from './MobileToolbar';
 
 const lowlight = createLowlight(common);
 
@@ -323,7 +324,9 @@ function TaskEditor({
       }
       
       debounceTimerRef.current = setTimeout(() => {
-        onChangeRef.current(editor.getHTML());
+        const html = editor.getHTML();
+        lastSavedContentRef.current = html;
+        onChangeRef.current(html);
       }, SAVE_DEBOUNCE_MS);
       
       // Check for slash command trigger (no debounce needed)
@@ -373,7 +376,9 @@ function TaskEditor({
         clearTimeout(debounceTimerRef.current);
       }
       if (editor) {
-        onChangeRef.current(editor.getHTML());
+        const html = editor.getHTML();
+        lastSavedContentRef.current = html;
+        onChangeRef.current(html);
       }
     },
   });
@@ -410,6 +415,9 @@ function TaskEditor({
     executeSlashCommandRef.current = executeSlashCommand;
   }, [executeSlashCommand]);
 
+  // Ref to track last content we sent via onChange to prevent echo loop
+  const lastSavedContentRef = useRef(null);
+
   // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
@@ -419,29 +427,43 @@ function TaskEditor({
     };
   }, []);
 
-  // Sync content when prop changes (from real-time updates)
+  // Sync content when prop changes (from external updates like real-time sync or AI)
   useEffect(() => {
-    // Check if content is truly different to avoid loops
-    if (editor && content !== undefined && content !== editor.getHTML()) {
-      // We accept updates even if focused, to ensure other devices see changes.
-      // We try to preserve the cursor position.
-      
-      const { from, to } = editor.state.selection;
-      
-      // Store current scroll position
-      const { scrollTop } = editor.view.dom;
-      
-      editor.commands.setContent(content);
-      
-      // Restore cursor and scroll if focused
-      if (isFocused) {
-        editor.commands.setTextSelection({ from, to });
-        // Attempt to restore scroll (might need requestAnimationFrame)
-        requestAnimationFrame(() => {
-           if (editor.view.dom) editor.view.dom.scrollTop = scrollTop;
-        });
-      }
+    if (!editor || content === undefined) return;
+    
+    const currentHtml = editor.getHTML();
+    
+    // Skip if content is the same
+    if (content === currentHtml) return;
+    
+    // Skip if user is focused AND this is an echo of our own save
+    // This prevents the race condition where our debounced save triggers
+    // a state update that then resets our editor mid-keystroke
+    if (isFocused && content === lastSavedContentRef.current) {
+      return;
     }
+    
+    // This is a genuine external update (from another device, AI, etc.)
+    // We need to apply it even if focused
+    const { from, to } = editor.state.selection;
+    const { scrollTop } = editor.view.dom;
+    
+    editor.commands.setContent(content);
+    
+    // Restore cursor and scroll if focused (best effort for external updates)
+    if (isFocused) {
+      // Clamp selection to valid range after content change
+      const maxPos = editor.state.doc.content.size;
+      const safeFrom = Math.min(from, maxPos);
+      const safeTo = Math.min(to, maxPos);
+      editor.commands.setTextSelection({ from: safeFrom, to: safeTo });
+      requestAnimationFrame(() => {
+        if (editor.view.dom) editor.view.dom.scrollTop = scrollTop;
+      });
+    }
+    
+    // Update our ref so we don't consider this an echo next time
+    lastSavedContentRef.current = content;
   }, [editor, content, isFocused]);
 
   // Scroll selected item into view
@@ -1019,6 +1041,9 @@ function TaskEditor({
           )}
         </div>
       )}
+
+      {/* Mobile Toolbar */}
+      {editor && <MobileToolbar editor={editor} />}
 
       {/* Floating Bubble Menu - appears on text selection */}
       <BubbleMenu 
